@@ -161,15 +161,15 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Ignore the entire node_modules folder
+# Ignore the entire node_modules directory
 node_modules/
 
-# Ignore all contents of the requirements folder
+# Ignore all contents of the requirements directory
 requirements/*
 
-# Do not ignore the requirements folder itself
-!requirements
+# Do not ignore the .gitkeep file in the requirements directory
+!requirements/.gitkeep
 
-# Ignore the entire _downloads folder
+# Ignore the entire _downloads directory
 _downloads/
 

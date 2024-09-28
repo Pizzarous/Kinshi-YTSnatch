@@ -3,6 +3,7 @@ import yt_dlp
 
 
 def download_video(url, output_path):
+    # Function to download a single video
     ydl_opts = {
         'format': 'best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
@@ -15,6 +16,7 @@ def download_video(url, output_path):
 
 
 def download_playlist(url, output_path):
+    # Function to download all videos in a playlist
     ydl_opts = {
         'format': 'best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
@@ -27,6 +29,7 @@ def download_playlist(url, output_path):
 
 
 def download_audio(url, output_path):
+    # Function to download audio from a single video
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
@@ -44,6 +47,7 @@ def download_audio(url, output_path):
 
 
 def download_playlist_audio(url, output_path):
+    # Function to download audio from all videos in a playlist
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),

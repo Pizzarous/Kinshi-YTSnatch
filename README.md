@@ -24,13 +24,7 @@
    cd Kinshi-YTSnatch
    ```
 
-3. **Create the requirements folder** (if it doesn't already exist):
-
-   ```bash
-   mkdir requirements
-   ```
-
-4. **Install dependencies**:
+3. **Install dependencies**:
 
    Make sure you have **Python** (3.6+) installed. Then, run:
 
@@ -38,7 +32,7 @@
    pip install yt-dlp
    ```
 
-5. **Download and set up FFmpeg**:
+4. **Download and set up FFmpeg**:
    - Download the [full version of FFmpeg](https://ffmpeg.org/download.html).
    - Place `ffmpeg.exe` into the `requirements` folder you just created.
    - Add the `requirements` folder to your Windows PATH:
