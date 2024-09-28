@@ -40,7 +40,7 @@
      2. Click on **Advanced system settings**.
      3. Click on the **Environment Variables** button.
      4. In the **System variables** section, find the **Path** variable and select it. Click **Edit**.
-     5. Click **New** and add the path to your `requirements` folder (e.g., `C:\path\Kinshi-YTSnatch\requirements`).
+     5. Click **New** and add the path to your `requirements` folder (e.g., `C:\...\Kinshi-YTSnatch\requirements\`).
      6. Click **OK** to close all dialog boxes.
 
 ## Usage
@@ -96,15 +96,6 @@ You'll then be prompted with options to choose from:
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-
-## Contributing
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes.
-4. Commit the changes (`git commit -m 'Add new feature'`).
-5. Push to the branch (`git push origin feature-branch`).
-6. Create a new Pull Request.
 
 ## Issues
 
