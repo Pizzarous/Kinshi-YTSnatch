@@ -1,7 +1,7 @@
 @echo off
 echo Installing dependencies...
 echo.
-pip install yt-dlp
+pip install yt-dlp tqdm
 
 timeout /t 2 /nobreak > nul
 cls
