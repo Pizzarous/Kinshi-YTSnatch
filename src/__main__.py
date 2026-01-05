@@ -17,14 +17,11 @@ def main():
     while True:
         display_menu()
 
-        # Get the download folder paths for audio and video
+        # Get the download folder path
         downloads_folder = get_download_folder()
-        audio_folder = os.path.join(downloads_folder, "audio")
-        video_folder = os.path.join(downloads_folder, "video")
 
-        # Create the audio and video folders if they don't exist
-        os.makedirs(audio_folder, exist_ok=True)
-        os.makedirs(video_folder, exist_ok=True)
+        # Create the downloads folder if it doesn't exist
+        os.makedirs(downloads_folder, exist_ok=True)
 
         # Prompt to select an option
         print("Select an option:")
@@ -60,8 +57,8 @@ def main():
             )
             continue
         else:
-            # Set the output path based on the media type
-            output_path = video_folder if media_type == "v" else audio_folder
+            # Set the output path to downloads folder by default
+            output_path = downloads_folder
 
         # Prompt to enter a folder name for the download
         folder_name = input(

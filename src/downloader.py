@@ -21,12 +21,21 @@ def download_video(url, output_path):
         # Then try to download with specific format selection
         print("Attempting download...")
         ydl_opts = {
-            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "format": "bestvideo+bestaudio/best",  # Download best video + best audio
             "outtmpl": os.path.join(output_path, "%(title)s.%(ext)s"),
+            "writesubtitles": True,  # Download manual subtitles only
+            "subtitleslangs": [
+                "en",
+                "all",
+            ],  # Download English and all available subtitles
             "postprocessors": [
                 {
+                    "key": "FFmpegEmbedSubtitle",  # Embed subtitles into the video
+                    "already_have_subtitle": False,
+                },
+                {
                     "key": "FFmpegMetadata",
-                }
+                },
             ],
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -41,10 +50,16 @@ def download_video(url, output_path):
             alt_opts = {
                 "format": "best",  # Simplest format selection
                 "outtmpl": os.path.join(output_path, "%(title)s.%(ext)s"),
+                "writesubtitles": True,
+                "subtitleslangs": ["en", "all"],
                 "postprocessors": [
                     {
+                        "key": "FFmpegEmbedSubtitle",
+                        "already_have_subtitle": False,
+                    },
+                    {
                         "key": "FFmpegMetadata",
-                    }
+                    },
                 ],
             }
             with yt_dlp.YoutubeDL(alt_opts) as ydl:
@@ -171,9 +186,14 @@ def _download_single_video_from_playlist(
 
     try:
         ydl_opts = {
-            "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "format": "bestvideo+bestaudio/best",  # Download best video + best audio
             "outtmpl": os.path.join(output_path, "%(title)s.%(ext)s"),
-            "postprocessors": [{"key": "FFmpegMetadata"}],
+            "writesubtitles": True,
+            "subtitleslangs": ["en", "all"],
+            "postprocessors": [
+                {"key": "FFmpegEmbedSubtitle", "already_have_subtitle": False},
+                {"key": "FFmpegMetadata"},
+            ],
             "quiet": True,
             "no_warnings": True,
             "progress_hooks": [progress_hook],
