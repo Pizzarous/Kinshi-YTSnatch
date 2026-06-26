@@ -1,6 +1,6 @@
-# Kinshi-YTSnatch
+# YTSnatch
 
-**Kinshi-YTSnatch** is a simple command-line tool that allows you to download YouTube videos or playlists and convert them to MP3 format. With options for video-only or audio-only downloads, it provides a streamlined way to manage media using `yt-dlp` and `ffmpeg` for conversion. Perfect for quick, easy video and audio downloads!
+**YTSnatch** is a simple command-line tool that allows you to download YouTube videos or playlists and convert them to MP3 format. With options for video-only or audio-only downloads, it provides a streamlined way to manage media using `yt-dlp` and `ffmpeg` for conversion. Perfect for quick, easy video and audio downloads!
 
 ## Features
 
@@ -45,7 +45,7 @@
 
 ## Usage
 
-To run **Kinshi-YTSnatch**, you can either execute the Python script directly or use the included `run.bat` file.
+To run **YTSnatch**, you can either execute the Python script directly or use the included `run.bat` file.
 
 ### Option 1: Using Python directly
 
@@ -55,7 +55,7 @@ To run **Kinshi-YTSnatch**, you can either execute the Python script directly or
    cd src
    ```
 
-2. Run **Kinshi-YTSnatch**:
+2. Run **YTSnatch**:
 
    ```bash
    python __main__.py
@@ -110,4 +110,4 @@ If you encounter any issues, feel free to open an issue in the [Issues tab](http
 
 ---
 
-Enjoy using **Kinshi-YTSnatch**! 😊
+Enjoy using **YTSnatch**! 😊
