@@ -15,13 +15,13 @@
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/Pizzarous/Kinshi-YTSnatch.git
+   git clone https://github.com/Pizzarous/YTSnatch.git
    ```
 
 2. **Navigate to the directory**:
 
    ```bash
-   cd Kinshi-YTSnatch
+   cd YTSnatch
    ```
 
 3. **Install dependencies**:
@@ -40,7 +40,7 @@
      2. Click on **Advanced system settings**.
      3. Click on the **Environment Variables** button.
      4. In the **System variables** section, find the **Path** variable and select it. Click **Edit**.
-     5. Click **New** and add the path to your `requirements` folder (e.g., `C:\...\Kinshi-YTSnatch\requirements\`).
+     5. Click **New** and add the path to your `requirements` folder (e.g., `C:\...\YTSnatch\requirements\`).
      6. Click **OK** to close all dialog boxes.
 
 ## Usage
@@ -99,7 +99,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Issues
 
-If you encounter any issues, feel free to open an issue in the [Issues tab](https://github.com/Pizzarous/Kinshi-YTSnatch/issues).
+If you encounter any issues, feel free to open an issue in the [Issues tab](https://github.com/Pizzarous/YTSnatch/issues).
 
 ---
 
