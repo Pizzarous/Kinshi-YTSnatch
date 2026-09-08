@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import yt_dlp
@@ -56,6 +57,35 @@ def _merge_opts(*opts_dicts):
             else:
                 result[key] = value
     return result
+
+
+def _download_with_retry(ydl, url, max_retries=3, delay=2):
+    """
+    Download a URL through an existing YoutubeDL instance, retrying a few times
+    if a transient Windows file-lock error shows up (WinError 32/5). This happens
+    when antivirus or search indexing briefly locks a file right after ffmpeg
+    writes/renames it - retrying after a short pause almost always succeeds.
+    """
+    last_error = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            ydl.download([url])
+            return
+        except (OSError, PermissionError) as e:
+            last_error = e
+            msg = str(e)
+            transient = (
+                "used by another process" in msg
+                or "Access is denied" in msg
+                or "WinError 32" in msg
+                or "WinError 5" in msg
+            )
+            if transient and attempt < max_retries:
+                time.sleep(delay)
+                continue
+            raise
+    if last_error:
+        raise last_error
 
 
 def download_video(url, output_path):
@@ -207,14 +237,22 @@ def _download_single_video_from_playlist(
     video_url = (
         video_info.get("url") or f"https://www.youtube.com/watch?v={video_info['id']}"
     )
-    title = video_info.get("title", "Unknown")
+    title = video_info.get("title") or video_url
     short_title = title[:50] + "..." if len(title) > 50 else title
 
     # Create progress bar for this download
     pbar = None
 
     def progress_hook(d):
-        nonlocal pbar
+        nonlocal pbar, title, short_title
+        # If we started with just a URL as a placeholder title, swap in the
+        # real title as soon as yt-dlp resolves it during download.
+        info = d.get("info_dict") or {}
+        real_title = info.get("title")
+        if real_title and title == video_url:
+            title = real_title
+            short_title = title[:50] + "..." if len(title) > 50 else title
+
         if d["status"] == "downloading":
             if pbar is None:
                 with pbar_lock:
@@ -272,7 +310,7 @@ def _download_single_video_from_playlist(
         )
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_url])
+            _download_with_retry(ydl, video_url)
 
         # Clean up progress bar if still exists
         if pbar:
@@ -404,14 +442,22 @@ def _download_single_audio_from_playlist(
     video_url = (
         video_info.get("url") or f"https://www.youtube.com/watch?v={video_info['id']}"
     )
-    title = video_info.get("title", "Unknown")
+    title = video_info.get("title") or video_url
     short_title = title[:50] + "..." if len(title) > 50 else title
 
     # Create progress bar for this download
     pbar = None
 
     def progress_hook(d):
-        nonlocal pbar
+        nonlocal pbar, title, short_title
+        # If we started with just a URL as a placeholder title, swap in the
+        # real title as soon as yt-dlp resolves it during download.
+        info = d.get("info_dict") or {}
+        real_title = info.get("title")
+        if real_title and title == video_url:
+            title = real_title
+            short_title = title[:50] + "..." if len(title) > 50 else title
+
         if d["status"] == "downloading":
             if pbar is None:
                 with pbar_lock:
@@ -473,7 +519,7 @@ def _download_single_audio_from_playlist(
         )
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_url])
+            _download_with_retry(ydl, video_url)
 
         # Clean up progress bar if still exists
         if pbar:
@@ -504,6 +550,108 @@ def _download_single_audio_from_playlist(
             "position": position,
             "error": error_msg,
         }
+
+
+def download_from_list(output_path, media_type):
+    """
+    Create a text file, wait for the user to paste one YouTube link per line and save it,
+    then download every link (video or audio) the same way a playlist would be downloaded.
+    The text file is deleted once all downloads finish.
+
+    Args:
+        output_path: folder to save downloads into
+        media_type: "v" for video, "a" for audio
+    """
+    list_file = os.path.join(output_path, "links.txt")
+
+    # Create an empty file for the user to fill in
+    with open(list_file, "w", encoding="utf-8") as f:
+        pass
+
+    print(f"\nA file has been created at:\n  {list_file}")
+    print("Open it, paste one YouTube link per line, then save and close it.")
+    input("Press Enter here once you're done...\n")
+
+    # Read back the links the user saved
+    with open(list_file, "r", encoding="utf-8") as f:
+        urls = [line.strip() for line in f if line.strip()]
+
+    if not urls:
+        print("No links found in the file. Nothing to download.")
+        os.remove(list_file)
+        return
+
+    print(f"\nFound {len(urls)} link(s). Starting download...\n")
+
+    # Build the download queue directly from the urls - no separate pass to
+    # look up titles first. Each worker resolves the real title itself once
+    # its download starts, so nothing is wasted double-fetching info.
+    videos = [{"url": u, "id": u, "title": u} for u in urls]
+
+    total_videos = len(videos)
+
+    downloaded = 0
+    skipped = 0
+    pbar_lock = threading.Lock()
+    active_bars = {}  # Track which progress bar positions are in use
+
+    worker_fn = (
+        _download_single_video_from_playlist
+        if media_type == "v"
+        else _download_single_audio_from_playlist
+    )
+
+    # Use ThreadPoolExecutor for parallel downloads (3 workers), same as playlist mode
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        with tqdm(
+            total=total_videos, desc="Overall Progress", position=0, leave=True
+        ) as overall_pbar:
+            try:
+                futures = {
+                    executor.submit(
+                        worker_fn,
+                        video,
+                        output_path,
+                        idx + 1,
+                        pbar_lock,
+                        active_bars,
+                    ): idx
+                    for idx, video in enumerate(videos)
+                }
+
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result["status"] == "success":
+                        downloaded += 1
+                        tqdm.write(
+                            f"✓ [{result['position']}/{total_videos}] {result['title']}"
+                        )
+                    else:
+                        skipped += 1
+                        tqdm.write(
+                            f"✗ [{result['position']}/{total_videos}] {result['title'][:50]} - {result['error']}"
+                        )
+
+                    overall_pbar.update(1)
+                    overall_pbar.set_description(f"Progress ({downloaded} ✓)")
+
+            except KeyboardInterrupt:
+                print("\n\n🛑 Download interrupted by user (Ctrl+C)")
+                print("Cancelling remaining downloads...")
+                executor.shutdown(wait=False, cancel_futures=True)
+                sys.exit(0)
+
+    print(f"\n{'=' * 60}")
+    print(f"Download Complete!")
+    print(f"Downloaded: {downloaded} | Skipped: {skipped} | Total: {total_videos}")
+    print(f"{'=' * 60}\n")
+
+    # Clean up the txt file now that everything has downloaded
+    try:
+        os.remove(list_file)
+        print(f"Removed temporary file: {list_file}\n")
+    except OSError:
+        pass
 
 
 def download_playlist_audio(url, output_path):

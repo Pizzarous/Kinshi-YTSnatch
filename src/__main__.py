@@ -2,6 +2,7 @@ import os
 
 from downloader import (
     download_audio,
+    download_from_list,
     download_playlist,
     download_playlist_audio,
     download_video,
@@ -27,17 +28,18 @@ def main():
         print("Select an option:")
         print("1. Download a single URL")
         print("2. Download a playlist")
-        print("3. Exit")
+        print("3. Download from a list of links (paste several links into a file)")
+        print("4. Exit")
 
-        option = input("Select an option (1-3): ")
+        option = input("Select an option (1-4): ")
 
-        # Exit the program if the user selects option 3
-        if option == "3":
+        # Exit the program if the user selects option 4
+        if option == "4":
             print("\nExiting the program. Goodbye!\n")
             break
 
         # Clear the screen and prompt the user to try again if an invalid option is selected
-        if option not in ["1", "2"]:
+        if option not in ["1", "2", "3"]:
             os.system("cls")
             print("\nInvalid option selected. Please try again.\n")
             continue
@@ -73,7 +75,9 @@ def main():
         else:
             print(f"Downloading to: {output_path}")
 
-        url = input("Enter the URL: ")
+        # Option 3 gathers links through a text file instead of a single URL prompt
+        if option != "3":
+            url = input("Enter the URL: ")
 
         # Download based on the selected option and media type
         if option == "1":
@@ -88,6 +92,8 @@ def main():
                 download_playlist(url, output_path)
             elif media_type == "a":
                 download_playlist_audio(url, output_path)
+        elif option == "3":
+            download_from_list(output_path, media_type)
 
         # Display completion art and prompt to return to the main menu
         display_completion_art()
